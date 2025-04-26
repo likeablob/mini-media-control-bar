@@ -1,0 +1,263 @@
+external_components:
+  - source: github://likeablob/esphome-blekeyboard@6023c6039f17f6c47b1ef4dc953e237f81e206c7
+  - source: github://likeablob/esphome-esp32-rotary-encoder@v0.1.0
+
+defaults:
+  ble_device_name: "mmcb"
+
+ble_keyboard:
+  id: mmcb_keyboard
+  name: "${ble_device_name}"
+  manufacturer_id: "mmcb"
+  battery_level: 50
+  reconnect: true
+  buttons: false
+  use_default_libs: false
+
+button:
+  - platform: template
+    id: btn_media_volume_up
+    name: "MEDIA_VOLUME_UP"
+    on_press:
+      - ble_keyboard.press:
+          id: mmcb_keyboard
+          code:
+            - 32
+            - 0
+      - ble_keyboard.release:
+          id: mmcb_keyboard
+          code:
+            - 32
+            - 0
+  - platform: template
+    id: btn_media_volume_down
+    name: "MEDIA_VOLUME_DOWN"
+    on_press:
+      - ble_keyboard.press:
+          id: mmcb_keyboard
+          code:
+            - 64
+            - 0
+      - ble_keyboard.release:
+          id: mmcb_keyboard
+          code:
+            - 64
+            - 0
+  - platform: template
+    id: btn_media_next_track
+    name: "MEDIA_NEXT_TRACK"
+    on_press:
+      - ble_keyboard.press:
+          id: mmcb_keyboard
+          code:
+            - 1
+            - 0
+      - ble_keyboard.release:
+          id: mmcb_keyboard
+          code:
+            - 1
+            - 0
+  - platform: template
+    id: btn_media_previous_track
+    name: "MEDIA_PREVIOUS_TRACK"
+    on_press:
+      - ble_keyboard.press:
+          id: mmcb_keyboard
+          code:
+            - 2
+            - 0
+      - ble_keyboard.release:
+          id: mmcb_keyboard
+          code:
+            - 2
+            - 0
+  - platform: template
+    id: btn_media_play_pause
+    name: "MEDIA_PLAY_PAUSE"
+    on_press:
+      - ble_keyboard.press:
+          id: mmcb_keyboard
+          code:
+            - 8
+            - 0
+      - ble_keyboard.release:
+          id: mmcb_keyboard
+          code:
+            - 8
+            - 0
+  - platform: template
+    id: btn_media_mute
+    name: "MEDIA_MUTE"
+    on_press:
+      - ble_keyboard.press:
+          id: mmcb_keyboard
+          code:
+            - 16
+            - 0
+      - ble_keyboard.release:
+          id: mmcb_keyboard
+          code:
+            - 16
+            - 0
+  - platform: template
+    id: btn_key_up_arrow
+    name: "KEY_UP_ARROW"
+    on_press:
+      - ble_keyboard.press:
+          id: mmcb_keyboard
+          code: 0xDA
+      - ble_keyboard.release:
+          id: mmcb_keyboard
+          code: 0xDA
+  - platform: template
+    id: btn_key_down_arrow
+    name: "KEY_DOWN_ARROW"
+    on_press:
+      - ble_keyboard.press:
+          id: mmcb_keyboard
+          code: 0xD9
+      - ble_keyboard.release:
+          id: mmcb_keyboard
+          code: 0xD9
+  - platform: template
+    id: btn_key_left_arrow
+    name: "KEY_LEFT_ARROW"
+    on_press:
+      - ble_keyboard.press:
+          id: mmcb_keyboard
+          code: 0xD8
+      - ble_keyboard.release:
+          id: mmcb_keyboard
+          code: 0xD8
+  - platform: template
+    id: btn_key_right_arrow
+    name: "KEY_RIGHT_ARROW"
+    on_press:
+      - ble_keyboard.press:
+          id: mmcb_keyboard
+          code: 0xD7
+      - ble_keyboard.release:
+          id: mmcb_keyboard
+          code: 0xD7
+
+sensor:
+  - platform: esp32_rotary_encoder
+    name: "Rotary Encoder"
+    pin_a:
+      number: GPIO0
+      mode:
+        input: true
+        pullup: true
+    pin_b:
+      number: GPIO1
+      mode:
+        input: true
+        pullup: true
+    resolution: 4
+    on_clockwise:
+      - logger.log: "Turned Clockwise"
+      - if:
+          condition:
+            binary_sensor.is_off:
+              id: sw1
+          then:
+            - button.press:
+                id: btn_media_volume_up
+          else:
+            - button.press:
+                id: btn_key_right_arrow
+    on_anticlockwise:
+      - logger.log: "Turned Anticlockwise"
+      - if:
+          condition:
+            binary_sensor.is_off:
+              id: sw1
+          then:
+            - button.press:
+                id: btn_media_volume_down
+          else:
+            - button.press:
+                id: btn_key_left_arrow
+
+binary_sensor:
+  - platform: gpio
+    name: "sw1"
+    id: "sw1"
+    pin:
+      number: GPIO21
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    on_double_click:
+      min_length: 10ms
+      max_length: 350ms
+      then:
+        - button.press:
+            id: btn_media_mute
+  - platform: gpio
+    name: "sw2"
+    pin:
+      number: GPIO20
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    on_click:
+      min_length: 10ms
+      max_length: 900ms
+      then:
+        - if:
+            condition:
+              binary_sensor.is_off:
+                id: sw1
+            then:
+              - button.press:
+                  id: btn_media_play_pause
+            else:
+              - button.press:
+                  id: btn_media_mute
+  - platform: gpio
+    name: "sw3"
+    pin:
+      number: GPIO10
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    on_click:
+      min_length: 10ms
+      max_length: 900ms
+      then:
+        - if:
+            condition:
+              binary_sensor.is_off:
+                id: sw1
+            then:
+              - button.press:
+                  id: btn_media_previous_track
+            else:
+              - button.press:
+                  id: btn_key_left_arrow
+  - platform: gpio
+    name: "sw4"
+    pin:
+      number: GPIO9
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    on_click:
+      min_length: 10ms
+      max_length: 900ms
+      then:
+        - if:
+            condition:
+              binary_sensor.is_off:
+                id: sw1
+            then:
+              - button.press:
+                  id: btn_media_next_track
+            else:
+              - button.press:
+                  id: btn_key_right_arrow
