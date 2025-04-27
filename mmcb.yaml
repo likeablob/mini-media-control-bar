@@ -1,6 +1,5 @@
 external_components:
   - source: github://likeablob/esphome-blekeyboard@6023c6039f17f6c47b1ef4dc953e237f81e206c7
-  - source: github://likeablob/esphome-esp32-rotary-encoder@v0.1.0
 
 defaults:
   ble_device_name: "mmcb"
@@ -141,19 +140,19 @@ button:
           code: 0xD7
 
 sensor:
-  - platform: esp32_rotary_encoder
+  - platform: rotary_encoder
     name: "Rotary Encoder"
     pin_a:
-      number: GPIO0
-      mode:
-        input: true
-        pullup: true
-    pin_b:
       number: GPIO1
       mode:
         input: true
         pullup: true
-    resolution: 4
+    pin_b:
+      number: GPIO0
+      mode:
+        input: true
+        pullup: true
+    resolution: 2
     on_clockwise:
       - logger.log: "Turned Clockwise"
       - if:
